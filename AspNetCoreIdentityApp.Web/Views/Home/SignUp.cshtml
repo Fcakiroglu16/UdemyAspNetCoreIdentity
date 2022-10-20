@@ -14,7 +14,7 @@
 
 <div class="row">
     <div class="col-md-6 offset-md-3">
-        <h2>Kullanıcı Kayıt Formu </h2>
+        <h2>Kullanıcı Kayıt </h2>
 
         @if (TempData["SuccessMessage"]!=null)
         {
@@ -43,7 +43,7 @@
                 <label for="Email" class="col-md-4 col-form-label" asp-for="Email"></label>
                 <div class="col-md-8">
                     <input asp-for="Email" class="form-control">
-                    <span class="text-danger" asp-validation-for="Password"></span>
+                    <span class="text-danger" asp-validation-for="Email"></span>
                 </div>
             </div>
             <div class="row mb-3">

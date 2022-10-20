@@ -1,4 +1,5 @@
 ﻿using AspNetCoreIdentityApp.Web.CustomValidations;
+using AspNetCoreIdentityApp.Web.Localizations;
 using AspNetCoreIdentityApp.Web.Models;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
@@ -13,14 +14,21 @@ namespace AspNetCoreIdentityApp.Web.Extenisons
 
                   options.User.RequireUniqueEmail = true;
                   options.User.AllowedUserNameCharacters = "abcdefghijklmnoprstuvwxyz1234567890_";
-
+               
                   options.Password.RequiredLength = 6;
                   options.Password.RequireNonAlphanumeric = false;
                   options.Password.RequireLowercase = true;
                   options.Password.RequireUppercase = false;
                   options.Password.RequireDigit = false;
 
-              }).AddPasswordValidator<PasswordValidator>().AddEntityFrameworkStores<AppDbContext>();
+
+                  options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(3);
+                  options.Lockout.MaxFailedAccessAttempts = 3;
+
+
+
+
+              }).AddPasswordValidator<PasswordValidator>().AddUserValidator<UserValidator>().AddErrorDescriber<LocalizationIdentityErrorDescriber>().AddEntityFrameworkStores<AppDbContext>();
 
 
         }
