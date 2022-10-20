@@ -1,6 +1,6 @@
 using AspNetCoreIdentityApp.Web.Models;
 using Microsoft.EntityFrameworkCore;
-
+using AspNetCoreIdentityApp.Web.Extenisons;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -11,8 +11,7 @@ builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("SqlCon"));
 });
 
-builder.Services.AddIdentity<AppUser,AppRole>().AddEntityFrameworkStores<AppDbContext>();
-
+builder.Services.AddIdentityWithExt();
 
 
 var app = builder.Build();
