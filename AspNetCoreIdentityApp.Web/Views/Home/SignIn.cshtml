@@ -15,12 +15,12 @@
         <form asp-controller="Home" asp-action="SignIn" method="post">
             <div class="mb-3">
                 <label for="Email" class="form-label" asp-for="Email"></label>
-                <input  class="form-control" asp-for="Email">
+                <input value="f-cakiroglu20@outlook.com"  class="form-control" asp-for="Email">
                 <span class="text-danger" asp-validation-for="Email"></span>
             </div>
             <div class="mb-3">
                 <label for="Password" class="form-label" asp-for="Password"></label>
-                <input type="password" class="form-control" asp-for="Password">
+                <input value="Password12*" type="password" class="form-control" asp-for="Password">
             </div>
             <div class="mb-3 form-check">
                 <input type="checkbox" class="form-check-input" asp-for="RememberMe">
