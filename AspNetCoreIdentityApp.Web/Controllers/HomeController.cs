@@ -24,7 +24,7 @@ namespace AspNetCoreIdentityApp.Web.Controllers
            
             return View();
         }
-
+       
         public IActionResult Privacy()
         {
             return View();
@@ -49,7 +49,7 @@ namespace AspNetCoreIdentityApp.Web.Controllers
         [HttpPost]
         public async Task<IActionResult> SignIn(SignInViewModel model,string? returnUrl=null)
         {
-
+           
             returnUrl = returnUrl ?? Url.Action("Index", "Home");
         
             var hasUser= await _UserManager.FindByEmailAsync(model.Email);

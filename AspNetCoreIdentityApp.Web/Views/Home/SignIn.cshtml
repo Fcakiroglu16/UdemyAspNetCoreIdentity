@@ -1,5 +1,6 @@
 ﻿@{
     ViewData["Title"] = "SignIn";
+   
 }
 
 @model SignInViewModel
@@ -12,7 +13,7 @@
 
         <div asp-validation-summary=ModelOnly class="alert alert-danger" role="alert">
         </div>
-        <form asp-controller="Home" asp-action="SignIn" method="post">
+        <form asp-controller="Home" asp-action="SignIn" asp-route-returnUrl="@Context.Request.Query["returnURl"]"  method="post">
             <div class="mb-3">
                 <label for="Email" class="form-label" asp-for="Email"></label>
                 <input value="f-cakiroglu20@outlook.com"  class="form-control" asp-for="Email">
