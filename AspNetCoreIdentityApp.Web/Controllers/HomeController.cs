@@ -4,6 +4,8 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
 using AspNetCoreIdentityApp.Web.Extenisons;
+using AspNetCoreIdentityApp.Web.Services;
+
 namespace AspNetCoreIdentityApp.Web.Controllers
 {
     public class HomeController : Controller
@@ -11,12 +13,14 @@ namespace AspNetCoreIdentityApp.Web.Controllers
         private readonly ILogger<HomeController> _logger;
         private readonly UserManager<AppUser> _UserManager;
         private readonly SignInManager<AppUser> _signInManager;
+        private readonly IEmailService _emailService;
 
-        public HomeController(ILogger<HomeController> logger, UserManager<AppUser> userManager, SignInManager<AppUser> signInManager)
+        public HomeController(ILogger<HomeController> logger, UserManager<AppUser> userManager, SignInManager<AppUser> signInManager, IEmailService emailService)
         {
             _logger = logger;
             _UserManager = userManager;
             _signInManager = signInManager;
+            _emailService = emailService;
         }
 
         public IActionResult Index()
@@ -131,6 +135,93 @@ namespace AspNetCoreIdentityApp.Web.Controllers
 
         }
 
+
+        public IActionResult ForgetPassword()
+        {
+          
+            return View();
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> ForgetPassword(ForgetPasswordViewModel request)
+        {
+
+            var hasUser = await _UserManager.FindByEmailAsync(request.Email);
+
+            
+            if(hasUser == null) {
+               
+                ModelState.AddModelError(String.Empty, "Bu email adresine sahip kullanıcı bulunamamıştır.");
+                return View();
+            }
+
+            string passwordResestToken = await _UserManager.GeneratePasswordResetTokenAsync(hasUser);
+
+
+            var passwordResetLink = Url.Action("ResetPassword", "Home", new { userId = hasUser.Id, Token = passwordResestToken }, HttpContext.Request.Scheme);
+            //örnek link https://localhost:7006?userId=12213&token=aajsdfjdsalkfjkdsfj
+
+            await _emailService.SendResetPasswordEmail(passwordResetLink, hasUser.Email);
+     
+
+            TempData["SuccessMessage"] = "Şifre yenileme linki, eposta adresinize gönderilmiştir";
+
+            return RedirectToAction(nameof(ForgetPassword));
+
+
+
+        }
+
+
+
+        public IActionResult ResetPassword(string userId,string token)
+        {
+            TempData["userId"] = userId;
+            TempData["token"] = token;
+            return View();
+
+        }
+        [HttpPost]
+        public async Task<IActionResult> ResetPassword(ResetPasswordViewModel request)
+        {
+            var userId = TempData["userId"];
+            var token = TempData["token"];
+
+            if(userId==null || token==null)
+            {
+                throw new Exception("Bir hata meydana geldi");
+            }
+
+            var hasUser = await _UserManager.FindByIdAsync(userId!.ToString());
+
+            if (hasUser == null)
+            {
+
+                ModelState.AddModelError(String.Empty, "Kullanıcı bulunamamıştır.");
+                return View();
+            }
+
+
+            IdentityResult result = await _UserManager.ResetPasswordAsync(hasUser, token!.ToString(), request.Password);
+
+            if(result.Succeeded)
+            {
+                TempData["SuccessMessage"] = "Şifreniz başarıyla yenilenmiştir";
+            }
+           
+            else
+            {
+                ModelState.AddModelErrorList(result.Errors.Select(x => x.Description).ToList());
+
+               
+            }
+
+
+            return View();
+
+
+
+        }
 
 
 

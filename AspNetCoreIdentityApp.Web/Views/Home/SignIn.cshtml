@@ -1,11 +1,13 @@
 ﻿@{
     ViewData["Title"] = "SignIn";
-   
-}
 
+}
 @model SignInViewModel
 
-
+@section Scripts
+    {
+    @await Html.PartialAsync("_ValidationScriptsPartial")
+}
 
 <div class="row">
     <div class="col-md-4 offset-md-4">
@@ -13,21 +15,41 @@
 
         <div asp-validation-summary=ModelOnly class="alert alert-danger" role="alert">
         </div>
-        <form asp-controller="Home" asp-action="SignIn" asp-route-returnUrl="@Context.Request.Query["returnURl"]"  method="post">
+        <form asp-controller="Home" asp-action="SignIn" asp-route-returnUrl="@Context.Request.Query["returnURl"]" method="post">
             <div class="mb-3">
                 <label for="Email" class="form-label" asp-for="Email"></label>
-                <input value="f-cakiroglu20@outlook.com"  class="form-control" asp-for="Email">
+                <input value="f-cakiroglu20@outlook.com" class="form-control" asp-for="Email">
                 <span class="text-danger" asp-validation-for="Email"></span>
             </div>
             <div class="mb-3">
                 <label for="Password" class="form-label" asp-for="Password"></label>
                 <input value="Password12*" type="password" class="form-control" asp-for="Password">
             </div>
-            <div class="mb-3 form-check">
-                <input type="checkbox" class="form-check-input" asp-for="RememberMe">
-                <label class="form-check-label" for="RememberMe" asp-for="RememberMe"></label>
+
+            <div class="row">
+                <div class="col-md-6">
+
+                    <div class="mb-3 form-check">
+                        <input type="checkbox" class="form-check-input" asp-for="RememberMe">
+                        <label class="form-check-label" for="RememberMe" asp-for="RememberMe"></label>
+                    </div>
+
+                </div>
+                <div class="col-md-6 ">
+                    <a  class="btn btn-outline-secondary btn-sm float-end" asp-controller="Home" asp-action="ForgetPassword">Şifremi unuttum</a>
+                </div>
             </div>
+
+
+
+
+
+
             <button type="submit" class="btn btn-primary">Üye Giriş</button>
+            <div>
+            </div>
+
+
         </form>
     </div>
 </div>
