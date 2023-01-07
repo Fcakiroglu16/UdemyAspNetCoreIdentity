@@ -6,8 +6,8 @@ namespace AspNetCoreIdentityApp.Web.ViewModels
     {
         public SignUpViewModel()
         {
-
         }
+
         public SignUpViewModel(string userName, string email, string phone, string password)
         {
             UserName = userName;
@@ -16,11 +16,11 @@ namespace AspNetCoreIdentityApp.Web.ViewModels
             Password = password;
         }
 
-        [Required(ErrorMessage ="Kullanıcı Ad alanı boş bırakılamaz.")]
-        [Display(Name ="Kullanıcı Adı :")]
+        [Required(ErrorMessage = "Kullanıcı Ad alanı boş bırakılamaz.")]
+        [Display(Name = "Kullanıcı Adı :")]
         public string UserName { get; set; }
 
-        [EmailAddress(ErrorMessage ="Email formatı yanlıştır.")]
+        [EmailAddress(ErrorMessage = "Email formatı yanlıştır.")]
         [Required(ErrorMessage = "Email alanı boş bırakılamaz.")]
         [Display(Name = "Email :")]
         public string Email { get; set; }
@@ -29,17 +29,17 @@ namespace AspNetCoreIdentityApp.Web.ViewModels
         [Display(Name = "Telefon :")]
         public string Phone { get; set; }
 
-
-
         [DataType(DataType.Password)]
         [Required(ErrorMessage = "Şifre alanı boş bırakılamaz.")]
-        [Display(Name =  "Şifre :")]
+        [Display(Name = "Şifre :")]
+        [MinLength(6, ErrorMessage = "Şifreniz en az 6 karakter olabilir")]
         public string Password { get; set; }
 
         [DataType(DataType.Password)]
-        [Compare(nameof(Password),ErrorMessage ="Şifre aynı değildir.")]
+        [Compare(nameof(Password), ErrorMessage = "Şifre aynı değildir.")]
         [Required(ErrorMessage = "Şifre tekrar alanı boş bırakılamaz")]
         [Display(Name = "Şifre Tekrar :")]
+        [MinLength(6, ErrorMessage = "Şifreniz en az 6 karakter olabilir")]
         public string PasswordConfirm { get; set; }
     }
 }
