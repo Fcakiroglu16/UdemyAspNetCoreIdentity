@@ -7,6 +7,8 @@ using AspNetCoreIdentityApp.Web.OptionsModels;
 using Microsoft.Extensions.DependencyInjection;
 using AspNetCoreIdentityApp.Web.Services;
 using Microsoft.Extensions.FileProviders;
+using Microsoft.AspNetCore.Authentication;
+using AspNetCoreIdentityApp.Web.ClaimProviders;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -28,6 +30,21 @@ builder.Services.AddSingleton<IFileProvider>(new PhysicalFileProvider(Directory.
 builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
 builder.Services.AddIdentityWithExt();
 builder.Services.AddScoped<IEmailService, EmailService>();
+builder.Services.AddScoped<IClaimsTransformation, UserClaimProvider>();
+
+
+builder.Services.AddAuthorization(options =>
+{
+
+    options.AddPolicy("AnkaraPolicy", policy =>
+    {
+        policy.RequireClaim("city", "ankara");
+
+
+    });
+
+
+});
 
 builder.Services.ConfigureApplicationCookie(opt =>
 {
