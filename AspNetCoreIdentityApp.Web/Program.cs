@@ -9,6 +9,8 @@ using AspNetCoreIdentityApp.Web.Services;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.AspNetCore.Authentication;
 using AspNetCoreIdentityApp.Web.ClaimProviders;
+using AspNetCoreIdentityApp.Web.Requirements;
+using Microsoft.AspNetCore.Authorization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -31,8 +33,8 @@ builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("Emai
 builder.Services.AddIdentityWithExt();
 builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<IClaimsTransformation, UserClaimProvider>();
-
-
+builder.Services.AddScoped<IAuthorizationHandler, ExchangeExpireRequirementHandler>();
+builder.Services.AddScoped<IAuthorizationHandler, ViolenceRequirementHandler>();
 builder.Services.AddAuthorization(options =>
 {
 
@@ -43,7 +45,19 @@ builder.Services.AddAuthorization(options =>
 
     });
 
+    options.AddPolicy("ExchangePolicy", policy =>
+    {
+        policy.AddRequirements(new ExchangeExpireRequirement());
 
+
+    });
+
+    options.AddPolicy("ViolencePolicy", policy =>
+    {
+        policy.AddRequirements(new ViolenceRequirement() {  ThresholdAge=18});
+
+
+    });
 });
 
 builder.Services.ConfigureApplicationCookie(opt =>

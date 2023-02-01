@@ -21,14 +21,10 @@ namespace AspNetCoreIdentityApp.Web.ClaimProviders
 
             var currentUser = await _userManager.FindByNameAsync(identityUser!.Name!);
 
-            
-
             if (String.IsNullOrEmpty(currentUser!.City))
             {
                 return principal;
             }
-
-
 
             if (principal.HasClaim(x => x.Type != "city"))
             {
