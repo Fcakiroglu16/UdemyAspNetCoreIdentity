@@ -33,7 +33,7 @@ namespace AspNetCoreIdentityApp.Web.ClaimProviders
                 identityUser.AddClaim(cityClaim);
             }
 
-
+            
 
 
 

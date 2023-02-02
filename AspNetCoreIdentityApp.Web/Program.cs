@@ -11,6 +11,8 @@ using Microsoft.AspNetCore.Authentication;
 using AspNetCoreIdentityApp.Web.ClaimProviders;
 using AspNetCoreIdentityApp.Web.Requirements;
 using Microsoft.AspNetCore.Authorization;
+using AspNetCoreIdentityApp.Web.Seeds;
+using AspNetCoreIdentityApp.Web.PermissionsRoot;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -58,6 +60,46 @@ builder.Services.AddAuthorization(options =>
 
 
     });
+
+    options.AddPolicy("OrderPermissionReadAndDelete", policy =>
+    {
+       
+        policy.RequireClaim("permission", Permissions.Order.Read);
+        policy.RequireClaim("permission", Permissions.Order.Delete);
+        policy.RequireClaim("permission", Permissions.Stock.Delete);
+
+    });
+
+
+
+    options.AddPolicy("Permissions.Order.Read", policy =>
+    {
+
+        policy.RequireClaim("permission", Permissions.Order.Read);
+     
+
+    });
+
+    options.AddPolicy("Permissions.Order.Delete", policy =>
+    {
+
+        policy.RequireClaim("permission", Permissions.Order.Delete);
+
+
+    });
+
+
+    options.AddPolicy("Permissions.Stock.Delete", policy =>
+    {
+
+        policy.RequireClaim("permission", Permissions.Stock.Delete);
+
+
+    });
+
+
+
+
 });
 
 builder.Services.ConfigureApplicationCookie(opt =>
@@ -74,6 +116,14 @@ builder.Services.ConfigureApplicationCookie(opt =>
 });
 
 var app = builder.Build();
+
+using (var scope= app.Services.CreateScope())
+{
+    var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<AppRole>>();
+
+   await  PermissionSeed.Seed(roleManager);
+}
+
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())

@@ -6,6 +6,7 @@ using System.Diagnostics;
 using AspNetCoreIdentityApp.Web.Extenisons;
 using AspNetCoreIdentityApp.Web.Services;
 using System.Security.Claims;
+using Microsoft.AspNetCore.Authentication;
 
 namespace AspNetCoreIdentityApp.Web.Controllers
 {
@@ -62,6 +63,10 @@ namespace AspNetCoreIdentityApp.Web.Controllers
                 ModelState.AddModelError(string.Empty, "Email veya şifre yanlış");
                 return View();
             }
+
+            
+
+           
 
             var signInResult = await _signInManager.PasswordSignInAsync(hasUser, model.Password, model.RememberMe, true);
 
