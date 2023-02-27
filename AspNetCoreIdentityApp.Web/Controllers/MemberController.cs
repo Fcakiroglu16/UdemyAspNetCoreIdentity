@@ -1,6 +1,6 @@
 ﻿using AspNetCoreIdentityApp.Web.Extenisons;
-using AspNetCoreIdentityApp.Web.Models;
-using AspNetCoreIdentityApp.Web.ViewModels;
+using AspNetCoreIdentityApp.Core.Models;
+using AspNetCoreIdentityApp.Core.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -9,6 +9,8 @@ using Microsoft.CodeAnalysis.Completion;
 using Microsoft.Extensions.FileProviders;
 using System.Collections.Generic;
 using System.Security.Claims;
+using AspNetCoreIdentityApp.Repository.Models;
+using AspNetCoreIdentityApp.Service.Services;
 
 namespace AspNetCoreIdentityApp.Web.Controllers
 {
@@ -18,35 +20,26 @@ namespace AspNetCoreIdentityApp.Web.Controllers
         private readonly SignInManager<AppUser> _signInManager;
         private readonly UserManager<AppUser> _userManager;
         private readonly IFileProvider _fileProvider;
+        private readonly IMemberService _memberService;
+        private string userName => User.Identity!.Name!;
 
-        public MemberController(SignInManager<AppUser> signInManager, UserManager<AppUser> userManager, IFileProvider fileProvider)
+        public MemberController(SignInManager<AppUser> signInManager, UserManager<AppUser> userManager, IFileProvider fileProvider, IMemberService memberService)
         {
             _signInManager = signInManager;
             _userManager = userManager;
             _fileProvider = fileProvider;
+            _memberService = memberService;
         }
 
         public async Task<IActionResult> Index()
         {
             
-
-          
-            var currentUser = (await _userManager.FindByNameAsync(User.Identity!.Name!))!;
-
-            var userViewModel = new UserViewModel
-            {
-                Email = currentUser.Email,
-                UserName = currentUser.UserName,
-                PhoneNumber = currentUser.PhoneNumber,
-                PictureUrl = currentUser.Picture
-            };
-
-            return View(userViewModel);
+            return View(await _memberService.GetUserViewModelByUserNameAsync(userName));
         }
 
         public async Task Logout()
         {
-            await _signInManager.SignOutAsync();
+           await  _memberService.LogoutAsync();
         }
 
         public IActionResult PasswordChange()
@@ -62,27 +55,22 @@ namespace AspNetCoreIdentityApp.Web.Controllers
                 return View();
             }
 
-            var currentUser = (await _userManager.FindByNameAsync(User.Identity!.Name!))!;
-
-            var checkOldPassword = await _userManager.CheckPasswordAsync(currentUser, request.PasswordOld);
-
-            if (!checkOldPassword)
+      
+            if (! await _memberService.CheckPasswordAsync(userName,request.PasswordOld))
             {
                 ModelState.AddModelError(string.Empty, "Eski şifreniz yanlış");
                 return View();
             }
 
-            var resultChangePassword = await _userManager.ChangePasswordAsync(currentUser, request.PasswordOld, request.PasswordNew);
+            var (isSuccess,errros) = await _memberService.ChangePasswordAsync(userName, request.PasswordOld, request.PasswordNew);
 
-            if (!resultChangePassword.Succeeded)
+            if (!isSuccess)
             {
-                ModelState.AddModelErrorList(resultChangePassword.Errors);
+                ModelState.AddModelErrorList(errros!);
                 return View();
             }
 
-            await _userManager.UpdateSecurityStampAsync(currentUser);
-            await _signInManager.SignOutAsync();
-            await _signInManager.PasswordSignInAsync(currentUser, request.PasswordNew, true, false);
+         
 
             TempData["SuccessMessage"] = "Şifreniz başarıyla değiştirilmiştir";
 
@@ -91,20 +79,9 @@ namespace AspNetCoreIdentityApp.Web.Controllers
 
         public async Task<IActionResult> UserEdit()
         {
-            ViewBag.genderList = new SelectList(Enum.GetNames(typeof(Gender)));
-            var currentUser = (await _userManager.FindByNameAsync(User.Identity!.Name!))!;
+            ViewBag.genderList = _memberService.GetGenderSelectList();
 
-            var userEditViewModel = new UserEditViewModel()
-            {
-                UserName = currentUser.UserName!,
-                Email = currentUser.Email!,
-                Phone = currentUser.PhoneNumber!,
-                BirthDate = currentUser.BirthDate,
-                City = currentUser.City,
-                Gender = currentUser.Gender,
-            };
-
-            return View(userEditViewModel);
+            return View(await _memberService.GetUserEditViewModelAsync(userName));
         }
 
         [HttpPost]
@@ -115,90 +92,27 @@ namespace AspNetCoreIdentityApp.Web.Controllers
                 return View();
             }
 
-            var currentUser = await _userManager.FindByNameAsync(User.Identity!.Name!);
 
-            currentUser.UserName = request.UserName;
-            currentUser.Email = request.Email;
-            currentUser.PhoneNumber = request.Phone;
-            currentUser.BirthDate = request.BirthDate;
-            currentUser.City = request.City;
-            currentUser.Gender = request.Gender;
+           var (isSuccess,errors) = await _memberService.EditUserAsync(request, userName);
 
-            if (request.Picture != null && request.Picture.Length > 0)
+            if (!isSuccess)
             {
-                var wwwrootFolder = _fileProvider.GetDirectoryContents("wwwroot");
-
-                string randomFileName = $"{Guid.NewGuid().ToString()}{Path.GetExtension(request.Picture.FileName)}";
-
-                var newPicturePath = Path.Combine(wwwrootFolder!.First(x => x.Name == "userpictures").PhysicalPath!, randomFileName);
-
-                using var stream = new FileStream(newPicturePath, FileMode.Create);
-
-                await request.Picture.CopyToAsync(stream);
-
-                currentUser.Picture = randomFileName;
-            }
-
-            var updateToUserResult = await _userManager.UpdateAsync(currentUser);
-
-            if (!updateToUserResult.Succeeded)
-            {
-                ModelState.AddModelErrorList(updateToUserResult.Errors);
+                ModelState.AddModelErrorList(errors!);
                 return View();
             }
 
-            await _userManager.UpdateSecurityStampAsync(currentUser);
-            await _signInManager.SignOutAsync();
-
-
-            if (request.BirthDate.HasValue)
-            {
-                await _signInManager.SignInWithClaimsAsync(currentUser, true, new[] { new Claim("birthdate", currentUser.BirthDate!.Value.ToString()) });
-            }
-
-            else
-            {
-                await _signInManager.SignInAsync(currentUser, true);
-            }
-
-
-
-
-
-
-
-
             TempData["SuccessMessage"] = "Üye bilgileri başarıyla değiştirilmiştir";
 
-            var userEditViewModel = new UserEditViewModel()
-            {
-                UserName = currentUser.UserName!,
-                Email = currentUser.Email!,
-                Phone = currentUser.PhoneNumber!,
-                BirthDate = currentUser.BirthDate,
-                City = currentUser.City,
-                Gender = currentUser.Gender,
-            };
-
-            return View(userEditViewModel);
+            return View( await _memberService.GetUserEditViewModelAsync(userName));
         }
 
 
 
         [HttpGet]
-        public IActionResult Claims()
+        public  IActionResult Claims()
         {
 
-
-
-            var userClaimList = User.Claims.Select(x => new ClaimViewModel()
-            {
-                Issuer = x.Issuer,
-                Type = x.Type,
-                Value = x.Value
-            }).ToList();
-
-            return View(userClaimList);
+            return View( _memberService.GetClaims(User));
 
         }
 
@@ -231,9 +145,6 @@ namespace AspNetCoreIdentityApp.Web.Controllers
         public IActionResult AccessDenied(string ReturnUrl)
         {
             string message = string.Empty;
-
-
-
             message = "Bu sayfayı görmeye yetkiniz yoktur. Yetki almak için  yöneticiniz ile görüşebilirsiniz.";
 
             ViewBag.message = message;

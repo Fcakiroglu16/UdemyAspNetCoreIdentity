@@ -1,10 +1,10 @@
-﻿using AspNetCoreIdentityApp.Web.Models;
-using AspNetCoreIdentityApp.Web.ViewModels;
+﻿using AspNetCoreIdentityApp.Repository.Models;
+using AspNetCoreIdentityApp.Core.ViewModels;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
 using AspNetCoreIdentityApp.Web.Extenisons;
-using AspNetCoreIdentityApp.Web.Services;
+using AspNetCoreIdentityApp.Service.Services;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication;
 

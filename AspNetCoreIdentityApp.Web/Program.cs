@@ -1,18 +1,18 @@
-using AspNetCoreIdentityApp.Web.Models;
+using AspNetCoreIdentityApp.Repository.Models;
 using Microsoft.EntityFrameworkCore;
 using AspNetCoreIdentityApp.Web.Extenisons;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Identity;
-using AspNetCoreIdentityApp.Web.OptionsModels;
+using AspNetCoreIdentityApp.Core.OptionsModels;
 using Microsoft.Extensions.DependencyInjection;
-using AspNetCoreIdentityApp.Web.Services;
+using AspNetCoreIdentityApp.Service.Services;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.AspNetCore.Authentication;
 using AspNetCoreIdentityApp.Web.ClaimProviders;
 using AspNetCoreIdentityApp.Web.Requirements;
 using Microsoft.AspNetCore.Authorization;
 using AspNetCoreIdentityApp.Web.Seeds;
-using AspNetCoreIdentityApp.Web.PermissionsRoot;
+using AspNetCoreIdentityApp.Core.PermissionsRoot;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -21,7 +21,10 @@ builder.Services.AddControllersWithViews();
 
 builder.Services.AddDbContext<AppDbContext>(options =>
 {
-    options.UseSqlServer(builder.Configuration.GetConnectionString("SqlCon"));
+    options.UseSqlServer(builder.Configuration.GetConnectionString("SqlCon"), options =>
+    {
+        options.MigrationsAssembly("AspNetCoreIdentityApp.Repository");
+    });
 });
 
 builder.Services.Configure<SecurityStampValidatorOptions>(options =>
@@ -37,6 +40,7 @@ builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<IClaimsTransformation, UserClaimProvider>();
 builder.Services.AddScoped<IAuthorizationHandler, ExchangeExpireRequirementHandler>();
 builder.Services.AddScoped<IAuthorizationHandler, ViolenceRequirementHandler>();
+builder.Services.AddScoped<IMemberService, MemberService>();
 builder.Services.AddAuthorization(options =>
 {
 
